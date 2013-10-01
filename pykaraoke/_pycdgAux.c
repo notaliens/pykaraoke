@@ -34,7 +34,7 @@
 #include <stdio.h>
 #include "structmember.h"
 #include "SDL.h"
-#include "pygame/pygame.h"
+#include "pygame.h"
 
 /* CDG Command Code */
 #define CDG_COMMAND                 0x09

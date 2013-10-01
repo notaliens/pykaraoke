@@ -108,10 +108,9 @@ class my_build_ext(build_ext):
     def finalize_options(self):
         build_ext.finalize_options(self)
         
-        if windows:
-            sdl_include_paths = []
-        else:
-            sdl_include_paths = ['/usr/include/SDL']
+        sdl_include_paths = ['../pygame/src']
+        if not windows:
+            sdl_include_paths.append('/usr/include/SDL')
 
         if self.sdl_location is not None:
             sdl_include_paths.append(
