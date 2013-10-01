@@ -107,38 +107,18 @@ class my_build_ext(build_ext):
 
     def finalize_options(self):
         build_ext.finalize_options(self)
-        if self.sdl_location is None:
-
-            # The default SDL location.  This is useful only if your
-            # SDL source is installed under a common root, with
-            # sdl_loc/include and sdl_loc/lib directories beneath that
-            # root.  This is the standard way that SDL is distributed
-            # on Windows, but not on Unix.  For a different
-            # configuration, just specify --include-dirs and
-            # --library-dirs separately.
-
-            if windows:
-                # For a default location on Windows, look around for SDL
-                # in the current directory.
-                sdl_dirs = glob.glob('SDL*')
-
-                # Sort them in order, so that the highest-numbered version
-                # will (probably) fall to the end.
-                sdl_dirs.sort()
-
-                for dir in sdl_dirs:
-                    if os.path.isdir(os.path.join(dir, 'include')):
-                        self.sdl_location = dir
+        
+        if windows:
+            sdl_include_paths = []
+        else:
+            sdl_include_paths = ['/usr/include/SDL']
 
         if self.sdl_location is not None:
-            # Now append the system paths.
-            self.include_dirs.append(os.path.join(self.sdl_location, 'include'))
-            self.library_dirs.append(os.path.join(self.sdl_location, 'lib'))
+            sdl_include_paths.append(
+                os.path.join(self.sdl_location, 'include')
+                )
 
-            # Also put the lib dir on the PATH, so py2exe can find SDL.dll.
-            if windows:
-                libdir = os.path.join(self.sdl_location, 'lib')
-                os.environ["PATH"] = '%s;%s' % (libdir, os.environ["PATH"])
+        self.include_dirs.extend(sdl_include_paths)
 
     def run(self):
         try:
