@@ -2,4 +2,5 @@ env*/
 build/
 dist/
 *.egg-info
+pykaraoke/*.so
 
