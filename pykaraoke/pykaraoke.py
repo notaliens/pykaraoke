@@ -127,7 +127,19 @@
 # usable while the songs are playing, allowing the user to
 # continue adding to the playlist etc.
 
+import cPickle
+import codecs
+import copy
+import os
+import random
+import string
 import sys
+import time
+import types
+
+import pkg_resources
+
+import wx
 
 # Ensure that we have at least wx version 2.6, but also protect
 # wxversion against py2exe (wxversion requires actual wx directories
@@ -137,15 +149,17 @@ if not hasattr(sys, 'frozen'):
     import wxversion
     wxversion.ensureMinimal('2.6')
 
-import os, string, wx, time, copy, types
-from pykconstants import *
-from pykenv import env
-import pycdg, pympg, pykar, pykversion, pykdb
-import codecs
-import cPickle
-from pykmanager import manager
-import random
-import performer_prompt as PerformerPrompt
+from .pykenv import env
+from .pykconstants import ENV_POSIX
+from .pykconstants import ENV_WINDOWS
+
+from . import pycdg
+from . import pympg
+from . import pykversion
+from . import pykdb
+
+from .pykmanager import manager
+from . import performer_prompt as PerformerPrompt
 
 # Constants
 PLAY_COL_TITLE =      "Title"
@@ -917,7 +931,7 @@ class ConfigWindow (wx.Frame):
         if env == ENV_WINDOWS:
             wildcard = 'Executable Programs (*.exe)|*.exe'
         else:
-            wildcast = 'All files|*'
+            wildcard = 'All files|*'
         dlg = wx.FileDialog(self, 'External Movie Player',
                             wildcard = wildcard)
         result = dlg.ShowModal()
@@ -1499,12 +1513,14 @@ class FileTree (wx.Panel):
         TreeStyle = wx.TR_NO_LINES|wx.TR_HAS_BUTTONS|wx.SUNKEN_BORDER|wx.TR_MULTIPLE
         self.FileTree = wx.TreeCtrl(self, -1, wx.Point(x, y), style=TreeStyle)
         # Find the correct icons path. If fully installed on Linux this will
-        # be sys.prefix/share/pykaraoke/icons. Otherwise look for it in the
+        # be in this package. Otherwise look for it in the
         # current directory.
-        if (os.path.isfile("icons/folder_open_16.png")):
-            iconspath = "icons"
+        if pkg_resources.resource_isdir('pykaraoke', 'icons'):
+            iconspath = pkg_resources.resource_filename(
+                'pykaraoke', 'icons'
+                )
         else:
-            iconspath = os.path.join(sys.prefix, "share/pykaraoke/icons")
+            iconspath = 'icons'
         self.FolderOpenIcon = wx.Bitmap(os.path.join(iconspath, "folder_open_16.png"))
         self.FolderClosedIcon = wx.Bitmap(os.path.join(iconspath, "folder_close_16.png"))
         self.FileIcon = wx.Bitmap(os.path.join(iconspath, "audio_16.png"))
@@ -2496,7 +2512,6 @@ class Playlist (wx.Panel):
             # If we have too much to fill the list space, then resize so that all columns
             # can be seen on screen. Scale each column by the same amount.
             else:
-                extraWidth = totalWidth - listWidth
                 if self.KaraokeMgr.SongDB.Settings.DisplayArtistTitleCols:
                     titleWidth = (titleWidth * listWidth)/totalWidth
                     artistWidth = (artistWidth * listWidth)/totalWidth
@@ -3297,14 +3312,15 @@ class PyKaraokeWindow (wx.Frame):
                             style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE)
         self.KaraokeMgr = KaraokeMgr
 
-        # Create the window icon. Find the correct icons path. If
-        # fully installed on Linux this will be
-        # sys.prefix/share/pykaraoke/icons. Otherwise look for it
-        # in the current directory.
-        if (os.path.isfile("icons/pykaraoke.xpm")):
-            iconspath = "icons"
+        # Find the correct icons path. If fully installed on Linux this will
+        # be in this package. Otherwise look for it in the
+        # current directory.
+        if pkg_resources.resource_isdir('pykaraoke', 'icons'):
+            iconspath = pkg_resources.resource_filename(
+                'pykaraoke', 'icons'
+                )
         else:
-            iconspath = os.path.join(sys.prefix, "share/pykaraoke/icons")
+            iconspath = 'icons'
         fullpath = os.path.join(iconspath, "pykaraoke.xpm")
         icon1 = wx.Icon(fullpath, wx.BITMAP_TYPE_XPM)
         self.SetIcon(icon1)
@@ -3576,7 +3592,7 @@ class PyKaraokeWindow (wx.Frame):
             abtnfAbout.SetLicence(LGPLv2_Notice)
             abtnfAbout.SetName("PyKaraoke")
             #abtnfAbout.AddTranslator("N/A")
-            abtnfAbout.SetVersion(pykversion.PYKARAOKE_VERSION_STRING)
+            abtnfAbout.SetVersion(pykversion.get_version())
             abtnfAbout.SetWebSite("http://www.kibosh.org/pykaraoke/")
             wx.AboutBox(abtnfAbout)
 
@@ -3672,7 +3688,7 @@ class PyKaraokeManager:
                 sys.exit(0)
             else:
                 self.EVT_ERROR_POPUP = wx.NewId()
-                self.Frame = PyKaraokeWindow(None, -1, "PyKaraoke " + pykversion.PYKARAOKE_VERSION_STRING, self)
+                self.Frame = PyKaraokeWindow(None, -1, "PyKaraoke " + pykversion.get_version(), self)
                 self.Frame.Connect(-1, -1, self.EVT_ERROR_POPUP, self.ErrorPopupEventHandler)
                 self.SongDB.LoadDatabase(self.ErrorPopupCallback)
 

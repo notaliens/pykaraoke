@@ -171,11 +171,14 @@
 # the screen into 24 segments and only update those segments
 # which have actually been updated.
 
-from pykconstants import *
-from pykplayer import pykPlayer
-from pykenv import env
-from pykmanager import manager
-import sys, pygame, os, string, math
+import math
+import sys
+import pygame
+
+from .pykconstants import STATE_PLAYING
+from .pykconstants import STATE_CAPTURING
+from .pykplayer import pykPlayer
+from .pykmanager import manager
 
 # Import the optimised C version if available, or fall back to Python
 try:

@@ -137,12 +137,20 @@
 # least every 100 milliseconds or so to guarantee good video and audio
 # response time.
 
+import pygame
+import sys
+import os
+import struct
+import cStringIO
 
-from pykconstants import *
-from pykplayer import pykPlayer
-from pykenv import env
-from pykmanager import manager
-import pygame, sys, os, struct, cStringIO
+from pykconstants import X_BORDER
+from pykconstants import ENV_WINDOWS
+from pykconstants import Y_BORDER
+from pykconstants import STATE_PLAYING
+from pykconstants import STATE_CAPTURING
+from .pykplayer import pykPlayer
+from .pykenv import env
+from .pykmanager import manager
 
 # At what percentage of the screen height should we try to keep the
 # current singing cursor?  33% keeps it on the top third, 50% keeps it
@@ -668,7 +676,6 @@ def midiParseTrack (filehdl, midifile, trackNum, Length, ErrorNotifyCallback):
 
 def midiProcessEvent (filehdl, track_desc, midifile, ErrorNotifyCallback):
     bytesRead = 0
-    running_status = 0
     click, varBytes = varLength(filehdl)
     if varBytes == 0:
         return 0

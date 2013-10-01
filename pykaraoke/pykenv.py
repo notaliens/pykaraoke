@@ -17,8 +17,13 @@
 
 """ This module guesses the execution environment of the application. """
 
-from pykconstants import *
 import os
+
+from .pykconstants import ENV_GP2X
+from .pykconstants import ENV_OSX
+from .pykconstants import ENV_WINDOWS
+from .pykconstants import ENV_UNKNOWN
+from .pykconstants import ENV_POSIX
 
 # Try to guess which environment we're running in.
 if os.name == "posix":
@@ -32,4 +37,4 @@ if os.name == "posix":
 elif os.name == "nt":
     env = ENV_WINDOWS
 else:
-	env = ENV_UNKNOWN
+        env = ENV_UNKNOWN

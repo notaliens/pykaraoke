@@ -20,5 +20,8 @@
 #**** Boston, MA  02111-1307  USA                                          ****
 #******************************************************************************
 
+import pkg_resources
+
 # Version string
-PYKARAOKE_VERSION_STRING = "0.7.5"
+def get_version():
+    return pkg_resources.get_distribution('pykaraoke').version

@@ -23,11 +23,18 @@
 """ This module provides support for the PyKaraoke song database, as
 well as the user's settings file. """
 
+import os
+import cPickle
+import zipfile
+import sys
+import time
 import pygame
-from pykconstants import *
+
+from pykconstants import ENV_WINDOWS
+from pykconstants import ENV_GP2X
+
 from pykenv import env
 import pykar, pycdg, pympg
-import os, cPickle, zipfile, codecs, sys, time
 import types
 from cStringIO import StringIO
 try:
@@ -717,8 +724,6 @@ class TitleStruct:
         return filename
 
     def __writeTitles(self, songDb, catalogFile, catalogPathname):
-        dirname = os.path.split(catalogPathname)[0]
-
         if catalogFile == None:
             # Open the file for writing.
             try:

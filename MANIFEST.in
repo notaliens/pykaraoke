@@ -21,7 +21,7 @@
 #**** Boston, MA  02111-1307  USA                                          ****
 #******************************************************************************
 
-recursive-include fonts *.ttf
-recursive-include icons *.png *.ico *.xpm
-recursive-include install *
+recursive-include pykaraoke/fonts *.ttf
+recursive-include pykaraoke/icons *.png *.ico *.xpm
+recursive-include pykaraoke/install *
 include README.txt  COPYING  TODO

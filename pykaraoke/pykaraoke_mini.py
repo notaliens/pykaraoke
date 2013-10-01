@@ -72,13 +72,21 @@
 # type multiple letters, search for a song beginning with the string
 # you type.
 
-from pykconstants import *
-from pykenv import env
-from pykmanager import manager
-from pykplayer import pykPlayer
-import pykversion
-import pykdb
-import pygame, sys, os, math, bisect
+import bisect
+import math
+import pygame
+import sys
+import os
+
+from .pykenv import env
+from .pykmanager import manager
+from .pykplayer import pykPlayer
+from .pykconstants import ENV_GP2X
+from .pykconstants import X_BORDER
+
+from . import gp2x
+from . import pykversion
+from . import pykdb
 
 # We inherit from pykPlayer here, not because we need to play a song
 # on the menu, but because we want to hook up to the pykManager and
@@ -143,7 +151,7 @@ class App(pykPlayer):
         pygame.font.init()
         font = pygame.font.Font(os.path.join(manager.FontPath, "DejaVuSansCondensed-Bold.ttf"), 12)
 
-        text = font.render("v%s" % pykversion.PYKARAOKE_VERSION_STRING, True, (0, 0, 0))
+        text = font.render("v%s" % pykversion.get_version(), True, (0, 0, 0))
         rect = text.get_rect()
         rect = rect.move(225 - rect.width, 43)
         splash.blit(text, rect)
@@ -227,7 +235,6 @@ class App(pykPlayer):
         row = self.__writeSongTitle(self.selectedSong, 0)
 
         self.startSongWindowRow = int((row + self.songWindowRowHeight - 1) / self.songWindowRowHeight)
-        numRows = self.numSongWindowRows - self.startSongWindowRow
 
         for i in range(len(self.selectedSong.sameSongs)):
             file = self.selectedSong.sameSongs[i]
@@ -300,7 +307,6 @@ class App(pykPlayer):
         artist/title has been marked, returns the marked song object.
         If the song has not been marked, returns None. """
 
-        marked = False
         if self.songDb.Sort == 'filename':            
             # If we're sorting by filename, then every song is
             # individually marked.
@@ -758,7 +764,7 @@ class App(pykPlayer):
                 self.pageUp(count)
 
         elif type == pygame.JOYBUTTONDOWN:
-            if key == GP2X_BUTTON_DOWN:
+            if key == gp2x.BUTTON_DOWN:
                 if self.ShoulderRHeld:
                     self.pageDown(count)
                 elif self.ShoulderLHeld:
@@ -766,7 +772,7 @@ class App(pykPlayer):
                 else:
                     self.rowDown(count)
                     
-            elif key == GP2X_BUTTON_UP:
+            elif key == gp2x.BUTTON_UP:
                 if self.ShoulderRHeld:
                     self.pageUp(count)
                 elif self.ShoulderLHeld:
@@ -774,9 +780,9 @@ class App(pykPlayer):
                 else:
                     self.rowUp(count)
 
-            elif key == GP2X_BUTTON_RIGHT:
+            elif key == gp2x.BUTTON_RIGHT:
                 self.letterDown(count)
-            elif key == GP2X_BUTTON_LEFT:
+            elif key == gp2x.BUTTON_LEFT:
                 self.letterUp(count)
 
     def doStuff(self):
@@ -851,26 +857,26 @@ class App(pykPlayer):
         elif env == ENV_GP2X and event.type == pygame.JOYBUTTONDOWN:
             button = event.button
 
-            if button == GP2X_BUTTON_UPLEFT or button == GP2X_BUTTON_UPRIGHT:
-                button = GP2X_BUTTON_UP
-            elif button == GP2X_BUTTON_DOWNLEFT or button == GP2X_BUTTON_DOWNRIGHT:
-                button = GP2X_BUTTON_DOWN
+            if button == gp2x.BUTTON_UPLEFT or button == gp2x.BUTTON_UPRIGHT:
+                button = gp2x.BUTTON_UP
+            elif button == gp2x.BUTTON_DOWNLEFT or button == gp2x.BUTTON_DOWNRIGHT:
+                button = gp2x.BUTTON_DOWN
                 
-            if button == GP2X_BUTTON_Y or button == GP2X_BUTTON_A or button == GP2X_BUTTON_SELECT:
+            if button == gp2x.BUTTON_Y or button == gp2x.BUTTON_A or button == gp2x.BUTTON_SELECT:
                 self.selectedSong = None
                 self.screenDirty = True
                 return
-            elif button == GP2X_BUTTON_START or \
-                 button == GP2X_BUTTON_X or \
-                 button == GP2X_BUTTON_B:
+            elif button == gp2x.BUTTON_START or \
+                 button == gp2x.BUTTON_X or \
+                 button == gp2x.BUTTON_B:
                 self.selectSong()
-            elif button == GP2X_BUTTON_UP:
+            elif button == gp2x.BUTTON_UP:
                 self.selectedSongRow = max(self.selectedSongRow - 1, 0)
                 self.screenDirty = True
-            elif button == GP2X_BUTTON_DOWN:
+            elif button == gp2x.BUTTON_DOWN:
                 self.selectedSongRow = min(self.selectedSongRow + 1, len(self.selectedSong.sameSongs) - 1)
                 self.screenDirty = True
-            elif button == GP2X_BUTTON_CLICK:
+            elif button == gp2x.BUTTON_CLICK:
                 # F1: mark song for later inspection.
                 self.markCurrentSongFile()
 
@@ -935,28 +941,28 @@ class App(pykPlayer):
             # equivalent.  This helps avoid the interruption of
             # scrolling because the GP2X joystick drifts too far left
             # or right.
-            if button == GP2X_BUTTON_UPLEFT or button == GP2X_BUTTON_UPRIGHT:
-                button = GP2X_BUTTON_UP
-            elif button == GP2X_BUTTON_DOWNLEFT or button == GP2X_BUTTON_DOWNRIGHT:
-                button = GP2X_BUTTON_DOWN
+            if button == gp2x.BUTTON_UPLEFT or button == gp2x.BUTTON_UPRIGHT:
+                button = gp2x.BUTTON_UP
+            elif button == gp2x.BUTTON_DOWNLEFT or button == gp2x.BUTTON_DOWNRIGHT:
+                button = gp2x.BUTTON_DOWN
                 
             self.heldKey = (pygame.JOYBUTTONDOWN, button, 0)
             self.heldStartTicks = pygame.time.get_ticks()
             self.heldRepeat = 0
 
-            if button == GP2X_BUTTON_Y:
+            if button == gp2x.BUTTON_Y:
                 self.running = False
-            elif button == GP2X_BUTTON_START or \
-                 button == GP2X_BUTTON_X or \
-                 button == GP2X_BUTTON_B:
+            elif button == gp2x.BUTTON_START or \
+                 button == gp2x.BUTTON_X or \
+                 button == gp2x.BUTTON_B:
                 self.selectSong()
-            elif button == GP2X_BUTTON_A:
+            elif button == gp2x.BUTTON_A:
                 self.changeSort()
-            elif button == GP2X_BUTTON_SELECT:
+            elif button == gp2x.BUTTON_SELECT:
                 # Break out so this one won't fall through to
                 # pykPlayer, which would shut us down.
                 return
-            elif button == GP2X_BUTTON_CLICK:
+            elif button == gp2x.BUTTON_CLICK:
                 # F1: mark song for later inspection.
                 self.markCurrentSongFile()
             else:
@@ -965,10 +971,10 @@ class App(pykPlayer):
         elif env == ENV_GP2X and event.type == pygame.JOYBUTTONUP:
             button = event.button
 
-            if button == GP2X_BUTTON_UPLEFT or button == GP2X_BUTTON_UPRIGHT:
-                button = GP2X_BUTTON_UP
-            elif button == GP2X_BUTTON_DOWNLEFT or button == GP2X_BUTTON_DOWNRIGHT:
-                button = GP2X_BUTTON_DOWN
+            if button == gp2x.BUTTON_UPLEFT or button == gp2x.BUTTON_UPRIGHT:
+                button = gp2x.BUTTON_UP
+            elif button == gp2x.BUTTON_DOWNLEFT or button == gp2x.BUTTON_DOWNRIGHT:
+                button = gp2x.BUTTON_DOWN
 
             if self.heldKey == (pygame.JOYBUTTONDOWN, button, 0):
                 self.heldKey = None

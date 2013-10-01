@@ -20,13 +20,23 @@ by the modules pykar.py, pycdg.py, and pympg.py.  This collects
 together some common interfaces used by these different
 implementations for different types of Karaoke files."""
 
-from pykconstants import *
-from pykmanager import manager
-from pykenv import env
 import pygame
+import os
 import sys
 import types
-import os
+
+from pykconstants import STATE_INIT
+from pykconstants import STATE_PLAYING
+from pykconstants import STATE_NOT_PLAYING
+from pykconstants import STATE_PAUSED
+from pykconstants import STATE_CLOSING
+from pykconstants import STATE_CLOSED
+from pykconstants import STATE_CAPTURING
+from pykconstants import ENV_GP2X
+
+from .pykmanager import manager
+from .pykenv import env
+from . import gp2x
 
 class pykPlayer:
     def __init__(self, song, songDb,
@@ -396,25 +406,25 @@ class pykPlayer:
             self.Close()
             
         elif env == ENV_GP2X and event.type == pygame.JOYBUTTONDOWN:
-            if event.button == GP2X_BUTTON_SELECT:
+            if event.button == gp2x.BUTTON_SELECT:
                 self.Close()
-            elif event.button == GP2X_BUTTON_START:
+            elif event.button == gp2x.BUTTON_START:
                 self.Pause()
-            elif event.button == GP2X_BUTTON_L:
+            elif event.button == gp2x.BUTTON_L:
                 self.ShoulderLHeld = True
-            elif event.button == GP2X_BUTTON_R:
+            elif event.button == gp2x.BUTTON_R:
                 self.ShoulderRHeld = True
 
             if self.SupportsFontZoom:
-                if event.button == GP2X_BUTTON_RIGHT and self.ShoulderLHeld:
+                if event.button == gp2x.BUTTON_RIGHT and self.ShoulderLHeld:
                     manager.ZoomFont(1.0/0.9)
-                elif event.button == GP2X_BUTTON_LEFT and self.ShoulderLHeld:
+                elif event.button == gp2x.BUTTON_LEFT and self.ShoulderLHeld:
                     manager.ZoomFont(0.9)
             
         elif env == ENV_GP2X and event.type == pygame.JOYBUTTONUP:
-            if event.button == GP2X_BUTTON_L:
+            if event.button == gp2x.BUTTON_L:
                 self.ShoulderLHeld = False
-            elif event.button == GP2X_BUTTON_R:
+            elif event.button == gp2x.BUTTON_R:
                 self.ShoulderRHeld = False
 
     def shutdown(self):

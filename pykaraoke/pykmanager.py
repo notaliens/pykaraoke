@@ -20,12 +20,19 @@
 #**** Boston, MA  02111-1307  USA                                          ****
 #******************************************************************************
 
-from pykconstants import *
-from pykenv import env
-import pykversion
-import pygame
 import os
-import sys
+import pkg_resources
+
+from pykconstants import ENV_GP2X
+from pykconstants import ENV_OSX
+from pykconstants import STATE_NOT_PLAYING
+from pykconstants import STATE_CLOSED
+
+from .pykenv import env
+from . import pykversion
+from . import gp2x
+
+import pygame
 
 # Python 2.3 and newer ship with optparse; older Python releases need "Optik"
 # installed (optik.sourceforge.net)
@@ -61,12 +68,18 @@ class pykManager:
         # Find the correct font path. If fully installed on Linux this
         # will be sys.prefix/share/pykaraoke/fonts. Otherwise look for
         # it in the current directory.
-        if (os.path.isfile("fonts/DejaVuSans.ttf")):
-            self.FontPath = "fonts"
-            self.IconPath = "icons"
+        if pkg_resources.resource_isdir('pykaraoke', 'fonts'):
+            self.FontPath = pkg_resources.resource_filename(
+                'pykaraoke', 'fonts'
+                )
         else:
-            self.FontPath = os.path.join(sys.prefix, "share/pykaraoke/fonts")
-            self.IconPath = os.path.join(sys.prefix, "share/pykaraoke/icons")
+            self.FontPath = 'fonts'
+        if pkg_resources.resource_isdir('pykaraoke', 'icons'):
+            self.IconPath = pkg_resources.resource_filename(
+                'pykaraoke', 'icons'
+                )
+        else:
+            self.IconPath = 'icons'
 
         if env == ENV_GP2X:
             speed = cpuctrl.get_FCLK()
@@ -379,7 +392,7 @@ class pykManager:
         application.  This version of this method returns the options
         that are likely to be useful for any karaoke application. """
 
-        version = "%prog " + pykversion.PYKARAOKE_VERSION_STRING
+        version = "%prog " + pykversion.get_version()
 
         settings = songDb.Settings
 
@@ -554,9 +567,9 @@ class pykManager:
                 player.doResizeEnd()
 
         elif env == ENV_GP2X and event.type == pygame.JOYBUTTONDOWN:
-            if event.button == GP2X_BUTTON_VOLUP:
+            if event.button == gp2x.BUTTON_VOLUP:
                 self.VolumeUp()
-            elif event.button == GP2X_BUTTON_VOLDOWN:
+            elif event.button == gp2x.BUTTON_VOLDOWN:
                 self.VolumeDown()
 
         if player:

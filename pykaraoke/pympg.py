@@ -18,12 +18,17 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-from pykconstants import *
-from pykplayer import pykPlayer
-from pykenv import env
-from pykmanager import manager
-import pygame, sys, os, string, subprocess
+import pygame
+import subprocess
+import sys
 import threading
+
+from .pykconstants import STATE_PLAYING
+from .pykconstants import ENV_WINDOWS
+
+from .pykplayer import pykPlayer
+from .pykenv import env
+from .pykmanager import manager
 
 # OVERVIEW
 #
